@@ -1,0 +1,11 @@
+using System.Collections.Generic;
+
+namespace MusicSync.RemoteServices;
+
+public class RemotePlaylist
+{
+    public IRemoteService.Type ServiceType;
+    public string Id;
+    public string Name;
+    private IEnumerable<RemoteTrack> Tracks;
+}
