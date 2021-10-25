@@ -3,6 +3,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using MusicSync.RemoteServices.Spotify;
 
 namespace MusicSync;
 
@@ -33,6 +34,7 @@ class Program
             .ConfigureServices((_, services) =>
             {
                 services.AddTransient<PlaylistSyncer>();
+                services.AddSingleton<ISpotifyService, SpotifyService>();
             });
     }
 }
