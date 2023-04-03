@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using MusicSync.RemoteServices.Spotify;
+using MusicSync.RemoteServices.Youtube;
 
 namespace MusicSync;
 
@@ -35,6 +36,7 @@ class Program
             {
                 services.AddTransient<PlaylistSyncer>();
                 services.AddSingleton<ISpotifyService, SpotifyService>();
+                services.AddSingleton<IYoutubeService, YoutubeService>();
             });
     }
 }
