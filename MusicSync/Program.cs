@@ -5,6 +5,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using MusicSync.RemoteServices.Spotify;
 using MusicSync.RemoteServices.Youtube;
+using MusicSync.Repository;
 
 namespace MusicSync;
 
@@ -34,6 +35,8 @@ class Program
             .ConfigureLogging(logging => { logging.AddConsole(); })
             .ConfigureServices((_, services) =>
             {
+                services.AddTransient<IRepositoryClient, PlaylistRepository>();
+                services.AddSingleton<IDatabase, Sqlite>();
                 services.AddTransient<PlaylistSyncer>();
                 services.AddSingleton<ISpotifyService, SpotifyService>();
                 services.AddSingleton<IYoutubeService, YoutubeService>();
