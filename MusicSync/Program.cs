@@ -3,6 +3,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using MusicSync.Jobs;
+using MusicSync.Jobs.JobFragments;
 using MusicSync.RemoteServices.Spotify;
 using MusicSync.RemoteServices.Youtube;
 using MusicSync.Repository;
@@ -40,6 +42,8 @@ class Program
                 services.AddTransient<PlaylistSyncer>();
                 services.AddSingleton<ISpotifyService, SpotifyService>();
                 services.AddSingleton<IYoutubeService, YoutubeService>();
+                services.AddSingleton<JobFactory>();
+                services.AddSingleton<JobFragmentFactory>();
             });
     }
 }
