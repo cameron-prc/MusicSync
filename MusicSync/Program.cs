@@ -8,6 +8,7 @@ using MusicSync.Jobs.JobFragments;
 using MusicSync.RemoteServices.Spotify;
 using MusicSync.RemoteServices.Youtube;
 using MusicSync.Repository;
+using MusicSync.Services;
 
 namespace MusicSync;
 
@@ -44,6 +45,7 @@ class Program
                 services.AddSingleton<IYoutubeService, YoutubeService>();
                 services.AddSingleton<JobFactory>();
                 services.AddSingleton<JobFragmentFactory>();
+                services.AddTransient<IJobPopulator, JobPopulator>();
             });
     }
 }
