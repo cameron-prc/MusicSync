@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using MusicSync.Common;
 using MusicSync.RemoteServices;
 using MusicSync.Repository;
@@ -20,12 +21,19 @@ public class UpdateLocalPlaylistJobFragment : JobFragmentBase
         RemotePlaylistService = remotePlaylistService;
     }
 
-    public override async Task Run()
+    public override async Task Run(Job context)
     {
         var local = await FetchLocal(LocalPlaylistId);
         var remote = await FetchRemotePlaylist(SourceId);
+        var newTracks = FindNewTracks(local, remote);
+        
+        if (newTracks.Count > 0)
+        {
+            context.Logger.LogInformation("Adding {newTracksCount} new tracks from {sourceType} playlist: '{playlistId}'", newTracks.Count, remote.GetType().ToString(), SourceId);
+        }
 
-        await SavePlaylist(local, remote);
+        await RepositoryClient.CreateTracks(newTracks, RemotePlaylistService.Type());
+        await RepositoryClient.AddToPlaylist(local.Id, newTracks);
     }
 
     private async Task<IEnumerable<RemoteTrack>> FetchRemotePlaylist(string remoteId)
@@ -33,16 +41,13 @@ public class UpdateLocalPlaylistJobFragment : JobFragmentBase
         return await RemotePlaylistService.GetPlaylist(remoteId);
     }
 
-    private async Task SavePlaylist(PlaylistEntity localPlaylistEntity, IEnumerable<RemoteTrack> remotePlaylist)
+    private List<TrackEntity> FindNewTracks(PlaylistEntity localPlaylistEntity, IEnumerable<RemoteTrack> remotePlaylist)
     {
-        var newTracks = remotePlaylist
+        return remotePlaylist
             .Where(remoteTrack =>
                 !localPlaylistEntity.Tracks.Select(track => track.GetId(RemotePlaylistService.Type())).Contains(remoteTrack.RemoteId)
             )
             .Select(remoteTrack => new TrackEntity(remoteTrack))
             .ToList();
-
-        await RepositoryClient.CreateTracks(newTracks, RemotePlaylistService.Type());
-        await RepositoryClient.AddToPlaylist(localPlaylistEntity.Id, newTracks);
     }
 }

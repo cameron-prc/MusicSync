@@ -1,5 +1,6 @@
 using System;
 using System.Text.Json;
+using Microsoft.Extensions.Logging;
 using MusicSync.Jobs.JobFragments;
 using MusicSync.RemoteServices;
 using MusicSync.RemoteServices.Spotify;
@@ -12,12 +13,14 @@ public class JobFactory
     private readonly ISpotifyService _spotifyService;
     private readonly IYoutubeService _youtubeService;
     private readonly JobFragmentFactory _jobFragmentFactory;
+    private readonly ILoggerFactory _loggerFactory;
 
-    public JobFactory(ISpotifyService spotifyService, IYoutubeService youtubeService, JobFragmentFactory jobFragmentFactory)
+    public JobFactory(ISpotifyService spotifyService, IYoutubeService youtubeService, JobFragmentFactory jobFragmentFactory, ILoggerFactory loggerFactory)
     {
         _spotifyService = spotifyService;
         _youtubeService = youtubeService;
         _jobFragmentFactory = jobFragmentFactory;
+        _loggerFactory = loggerFactory;
     }
 
     public Job BuildJob(JobDto jobDto)
@@ -57,7 +60,7 @@ public class JobFactory
             _jobFragmentFactory.BuildUpdateRemotePlaylistJobFragment(destinationRemoteService, dto.DestinationId, dto.Id)
         };
 
-        return new Job(jobFragments);
+        return new Job(jobFragments, _loggerFactory.CreateLogger(typeof(Job)));
     }
 
     private IRemotePlaylistService GetRemoteService(IRemoteService.Type type)

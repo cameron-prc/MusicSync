@@ -1,5 +1,6 @@
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using MusicSync.RemoteServices;
 using MusicSync.Repository;
 
@@ -18,7 +19,7 @@ public class UpdateRemotePlaylistJobFragment : JobFragmentBase
         RemotePlaylistService = remotePlaylistService;
     }
 
-    public override async Task Run()
+    public override async Task Run(Job context)
     {
         var localPlaylist = await FetchLocal(LocalPlaylistId);
         var remotePlaylist =  await RemotePlaylistService.GetPlaylist(DestinationId);
@@ -30,6 +31,7 @@ public class UpdateRemotePlaylistJobFragment : JobFragmentBase
 
         if (missingTracks.Count > 0)
         {
+            context.Logger.LogInformation("Adding {newTracksCount} new tracks to {remotePlaylistType} playlistId: '{playlistId}'", missingTracks.Count, RemotePlaylistService.Type(), DestinationId);
             await RemotePlaylistService.AddToPlaylist(DestinationId, missingTracks);
         }
     }

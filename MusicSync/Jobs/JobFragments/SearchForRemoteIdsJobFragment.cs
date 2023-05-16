@@ -1,6 +1,6 @@
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using MusicSync.Common;
 using MusicSync.RemoteServices;
 using MusicSync.Repository;
@@ -18,10 +18,20 @@ public class SearchForRemoteIdsJobFragment : JobFragmentBase
         LocalPlaylistId = localPlaylistId;
     }
 
-    public override async Task Run()
+    public override async Task Run(Job context)
     {
         var localPlaylist = await FetchLocal(LocalPlaylistId);
         var tracksWithoutRemoteId = localPlaylist.Tracks.Where(track => track.GetId(RemotePlaylistService.Type()) == null).ToList();
+        var updatedTracksCount = 0;
+
+        if (tracksWithoutRemoteId.Count == 0)
+        {
+            context.Logger.LogDebug("All tracks have matching {remoteType} id", RemotePlaylistService.Type());
+            
+            return;
+        }
+        
+        context.Logger.LogInformation("Searching {remotePlaylistServiceType} for {tracksWithoutRemoteIdCount} tracks with missing remoteId", RemotePlaylistService.Type(), tracksWithoutRemoteId.Count);
 
         foreach (var track in tracksWithoutRemoteId)
         {
@@ -31,7 +41,20 @@ public class SearchForRemoteIdsJobFragment : JobFragmentBase
             {
                 track.SetRemoteId(RemotePlaylistService.Type(), remoteTrack.RemoteId);
                 await RepositoryClient.SetRemoteId(track, RemotePlaylistService.Type());
+
+                updatedTracksCount += 1;
             }
+        }
+
+        var remainingTracksWithoutRemoteIdCount = tracksWithoutRemoteId.Count - updatedTracksCount;
+
+        if (remainingTracksWithoutRemoteIdCount > 0)
+        {
+            context.Logger.LogInformation("Unable to find {RemoteType} id for {remainingTracksWithoutRemoteIdCount} tracks", RemotePlaylistService.Type(), remainingTracksWithoutRemoteIdCount);
+        }
+        else
+        {
+            context.Logger.LogInformation("Found {RemoteType} id for all tracks", RemotePlaylistService.Type());
         }
     }
 }

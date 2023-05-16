@@ -1,4 +1,5 @@
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using MusicSync.Common;
 using MusicSync.Repository;
 
@@ -13,7 +14,7 @@ public abstract class JobFragmentBase
         RepositoryClient = repositoryClient;
     }
 
-    public abstract Task Run();
+    public abstract Task Run(Job context);
 
     protected async Task<PlaylistEntity> FetchLocal(string localName)
     {
