@@ -6,6 +6,7 @@ namespace MusicSync.RemoteServices;
 
 public interface IRemotePlaylistService : IRemoteService
 {
+    public Type Type();
     public Task<IEnumerable<RemoteTrack>> GetPlaylist(string playlistId);
     public Task AddToPlaylist(string playlistId, IList<TrackEntity> tracks);
 }

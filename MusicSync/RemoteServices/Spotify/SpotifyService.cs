@@ -20,6 +20,11 @@ public class SpotifyService : ISpotifyService
         _client = new SpotifyAdapter(configuration).BuildSpotifyClient().Result;
     }
 
+    public IRemoteService.Type Type()
+    {
+        return IRemoteService.Type.Spotify;
+    }
+
     public async Task<IEnumerable<RemoteTrack>> GetPlaylist(string playlistId)
     {
         _logger.LogDebug("Fetching playlist PlaylistId: '{playlistId}'", playlistId);

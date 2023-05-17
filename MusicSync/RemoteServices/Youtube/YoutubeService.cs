@@ -39,7 +39,12 @@ public class YoutubeService : IYoutubeService
             ApplicationName = "MusicSync"
         });
     }
-    
+
+    public IRemoteService.Type Type()
+    {
+        return IRemoteService.Type.YouTube;
+    }
+
     public Task<IEnumerable<RemoteTrack>> GetPlaylist(string playlistId)
     {
         _logger.LogDebug("Fetching playlist PlaylistId: '{playlistId}'", playlistId);
