@@ -13,7 +13,7 @@ public class TrackEntity
         Title = track.TrackName;
         ArtistName = track.ArtistName;
 
-        SetRemoteId(track.RemoteType, track.RemoteId);
+        SetRemoteId(track.RemoteServiceType, track.RemoteId);
     }
 
     public string? Title { get; init; }
@@ -22,28 +22,28 @@ public class TrackEntity
     public string? SpotifyId { get; set; }
     public string LocalId { get; set; } = null!;
 
-    public string? GetId(IRemoteService.Type remoteType)
+    public string? GetId(IRemoteService.ServiceType remoteServiceType)
     {
-        return remoteType switch
+        return remoteServiceType switch
         {
-            IRemoteService.Type.YouTube => YoutubeId,
-            IRemoteService.Type.Spotify => SpotifyId,
-            _ => throw new ArgumentOutOfRangeException(nameof(remoteType), remoteType, null)
+            IRemoteService.ServiceType.YouTube => YoutubeId,
+            IRemoteService.ServiceType.Spotify => SpotifyId,
+            _ => throw new ArgumentOutOfRangeException(nameof(remoteServiceType), remoteServiceType, null)
         };
     }
 
-    public void SetRemoteId(IRemoteService.Type remoteType, string remoteId)
+    public void SetRemoteId(IRemoteService.ServiceType remoteServiceType, string remoteId)
     {
-        switch (remoteType)
+        switch (remoteServiceType)
         {
-            case IRemoteService.Type.YouTube:
+            case IRemoteService.ServiceType.YouTube:
                 YoutubeId = remoteId;
                 break;
-            case IRemoteService.Type.Spotify:
+            case IRemoteService.ServiceType.Spotify:
                 SpotifyId = remoteId;
                 break;
             default:
-                throw new ArgumentOutOfRangeException(nameof(remoteType), remoteType, null);
+                throw new ArgumentOutOfRangeException(nameof(remoteServiceType), remoteServiceType, null);
         }
     }
 }

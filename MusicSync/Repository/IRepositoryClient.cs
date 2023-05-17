@@ -10,7 +10,7 @@ namespace MusicSync.Repository
         public Task<PlaylistEntity?> GetPlaylist(string name);
         public Task<PlaylistEntity> CreatePlaylist(string name);
         public Task AddToPlaylist(string playlistId, IEnumerable<TrackEntity> tracks);
-        Task CreateTracks(List<TrackEntity> tracks, IRemoteService.Type remoteType);
-        Task SetRemoteId(TrackEntity track, IRemoteService.Type type);
+        Task CreateTracks(List<TrackEntity> tracks, IRemoteService.ServiceType remoteServiceType);
+        Task SetRemoteId(TrackEntity track, IRemoteService.ServiceType serviceType);
     }
 }

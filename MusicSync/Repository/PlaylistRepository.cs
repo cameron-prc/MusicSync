@@ -55,7 +55,7 @@ public class PlaylistRepository : IRepositoryClient
         );
     }
 
-    public async Task CreateTracks(List<TrackEntity> tracks, IRemoteService.Type remoteType)
+    public async Task CreateTracks(List<TrackEntity> tracks, IRemoteService.ServiceType remoteServiceType)
     {
         _logger.LogInformation("Persisting {newTrackCount} new tracks", tracks.Count);
 
@@ -67,20 +67,20 @@ public class PlaylistRepository : IRepositoryClient
         );
     }
 
-    public async Task SetRemoteId(TrackEntity track, IRemoteService.Type remoteType)
+    public async Task SetRemoteId(TrackEntity track, IRemoteService.ServiceType remoteServiceType)
     {
-        var queryKey = remoteType switch
+        var queryKey = remoteServiceType switch
         {
-            IRemoteService.Type.YouTube => "YoutubeId",
-            IRemoteService.Type.Spotify => "SpotifyId",
-            _ => throw new ArgumentOutOfRangeException(nameof(remoteType), remoteType, null)
+            IRemoteService.ServiceType.YouTube => "YoutubeId",
+            IRemoteService.ServiceType.Spotify => "SpotifyId",
+            _ => throw new ArgumentOutOfRangeException(nameof(remoteServiceType), remoteServiceType, null)
         };
         var query = $"UPDATE Tracks SET {queryKey} = @RemoteId WHERE LocalId = @LocalId";
 
         _logger.LogDebug("Setting {queryKey} to '' for TrackId: {localId}", queryKey, track.LocalId);
 
         await using var connection = _database.GetConnection();
-        await connection.ExecuteAsync(query, new { RemoteId = track.GetId(remoteType), LocalId = track.LocalId});
+        await connection.ExecuteAsync(query, new { RemoteId = track.GetId(remoteServiceType), LocalId = track.LocalId});
     }
 
     async Task<PlaylistEntity?> IRepositoryClient.GetPlaylist(string name)

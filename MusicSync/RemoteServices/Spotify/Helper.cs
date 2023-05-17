@@ -11,7 +11,7 @@ public static class Helper
         return new RemoteTrack
         {
             RemoteId = fullTrack.Id,
-            RemoteType = IRemoteService.Type.Spotify,
+            RemoteServiceType = IRemoteService.ServiceType.Spotify,
             TrackName = fullTrack.Name,
             ArtistName = fullTrack.Artists.First().Name // First artist is the primary artist
         };

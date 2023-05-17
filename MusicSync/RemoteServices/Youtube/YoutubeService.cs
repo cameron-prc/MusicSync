@@ -40,9 +40,9 @@ public class YoutubeService : IYoutubeService
         });
     }
 
-    public IRemoteService.Type Type()
+    public IRemoteService.ServiceType Type()
     {
-        return IRemoteService.Type.YouTube;
+        return IRemoteService.ServiceType.YouTube;
     }
 
     public Task<IEnumerable<RemoteTrack>> GetPlaylist(string playlistId)

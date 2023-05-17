@@ -48,8 +48,8 @@ public class JobFactory
 
     private Job BuildSyncRemoteToRemoteJob(SyncRemoteToRemoteJobDto dto)
     {
-        var originRemoteServiceType = Enum.Parse<IRemoteService.Type>(dto.SourceType);
-        var destinationRemoteServiceType = Enum.Parse<IRemoteService.Type>(dto.DestinationType);
+        var originRemoteServiceType = Enum.Parse<IRemoteService.ServiceType>(dto.SourceType);
+        var destinationRemoteServiceType = Enum.Parse<IRemoteService.ServiceType>(dto.DestinationType);
         var originRemoteService = GetRemoteService(originRemoteServiceType);
         var destinationRemoteService = GetRemoteService(destinationRemoteServiceType);
 
@@ -63,13 +63,13 @@ public class JobFactory
         return new Job(jobFragments, _loggerFactory.CreateLogger(typeof(Job)));
     }
 
-    private IRemotePlaylistService GetRemoteService(IRemoteService.Type type)
+    private IRemotePlaylistService GetRemoteService(IRemoteService.ServiceType serviceType)
     {
-        return type switch
+        return serviceType switch
         {
-            IRemoteService.Type.YouTube => _youtubeService,
-            IRemoteService.Type.Spotify => _spotifyService,
-            _ => throw new ArgumentOutOfRangeException(nameof(type), type, null)
+            IRemoteService.ServiceType.YouTube => _youtubeService,
+            IRemoteService.ServiceType.Spotify => _spotifyService,
+            _ => throw new ArgumentOutOfRangeException(nameof(serviceType), serviceType, null)
         };
     }
 }

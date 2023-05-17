@@ -7,7 +7,8 @@ public interface IRemoteService
 {
     public Task<RemoteTrack?> SearchTracks(TrackEntity track);
 
-    public enum Type
+    public ServiceType Type();
+    public enum ServiceType
     {
         YouTube,
         Spotify

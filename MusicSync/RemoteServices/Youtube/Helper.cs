@@ -24,7 +24,7 @@ public static class Helper
         return new RemoteTrack
         {
             RemoteId = playlistItem.Snippet.ResourceId.VideoId,
-            RemoteType = IRemoteService.Type.YouTube,
+            RemoteServiceType = IRemoteService.ServiceType.YouTube,
             TrackName = trackName,
             ArtistName =artistName
         };
@@ -69,7 +69,7 @@ public static class Helper
             ArtistName = originalTrack.ArtistName,
             TrackName = originalTrack.Title,
             RemoteId = searchResult.Id.VideoId,
-            RemoteType = IRemoteService.Type.YouTube
+            RemoteServiceType = IRemoteService.ServiceType.YouTube
         };
     }
 }
