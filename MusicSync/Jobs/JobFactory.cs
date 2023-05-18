@@ -43,10 +43,10 @@ public class JobFactory
             throw new Exception();
         }
 
-        return BuildSyncRemoteToRemoteJob(concreteDto);
+        return BuildSyncRemoteToRemoteJob(jobDto.Name, concreteDto);
     }
 
-    private Job BuildSyncRemoteToRemoteJob(SyncRemoteToRemoteJobDto dto)
+    private Job BuildSyncRemoteToRemoteJob(string name, SyncRemoteToRemoteJobDto dto)
     {
         var originRemoteServiceType = Enum.Parse<IRemoteService.ServiceType>(dto.SourceType);
         var destinationRemoteServiceType = Enum.Parse<IRemoteService.ServiceType>(dto.DestinationType);
@@ -60,7 +60,7 @@ public class JobFactory
             _jobFragmentFactory.BuildUpdateRemotePlaylistJobFragment(destinationRemoteService, dto.DestinationId, dto.Id)
         };
 
-        return new Job(jobFragments, _loggerFactory.CreateLogger(typeof(Job)));
+        return new Job(name, jobFragments, _loggerFactory.CreateLogger($"{typeof(Job)}.{name}"));
     }
 
     private IRemotePlaylistService GetRemoteService(IRemoteService.ServiceType serviceType)

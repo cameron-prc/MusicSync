@@ -27,14 +27,15 @@ public class JobPopulator : IJobPopulator
         foreach (var polymorphicJobNode in jobsArray)
         {
             var jobType = polymorphicJobNode?["Type"]?.ToString();
+            var jobName = polymorphicJobNode?["Name"]?.ToString();
             var jobData = polymorphicJobNode?["Data"]?.ToString();
 
-            if (jobType == null || jobData == null)
+            if (jobType == null || jobData == null || string.IsNullOrWhiteSpace(jobName))
             {
                 throw new Exception($"Malformed job: {polymorphicJobNode}");
             }
 
-            var jobDto = new JobDto(Type: jobType, Data: jobData);
+            var jobDto = new JobDto(Type: jobType, Name: jobName, Data: jobData);
 
             jobs.Add(_jobFactory.BuildJob(jobDto));
         }

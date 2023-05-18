@@ -8,9 +8,12 @@ namespace MusicSync.Jobs;
 public class Job
 {
     private readonly IEnumerable<JobFragmentBase> _jobFragments;
+    public string Name { get; }
+    public ILogger Logger { get; }
 
-    public Job(IEnumerable<JobFragmentBase> jobFragments, ILogger logger)
+    public Job(string name, IEnumerable<JobFragmentBase> jobFragments, ILogger logger)
     {
+        Name = name;
         _jobFragments = jobFragments;
         Logger = logger;
     }
@@ -22,6 +25,4 @@ public class Job
             await fragment.Run(this);
         }
     }
-
-    public ILogger Logger { get; }
 }
