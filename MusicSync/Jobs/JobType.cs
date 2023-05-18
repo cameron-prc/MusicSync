@@ -2,5 +2,6 @@ namespace MusicSync.Jobs;
 
 public enum JobType
 {
-    SyncRemoteToRemote
+    SyncRemoteToRemote,
+    SyncRemoteToLocal
 }

@@ -31,6 +31,7 @@ public class JobFactory
         return jobType switch
         {
             JobType.SyncRemoteToRemote => BuildSyncRemoteToRemoteJob(jobDto),
+            JobType.SyncRemoteToLocal => BuildSyncRemoteToLocalJob(jobDto),
             _ => throw new ArgumentOutOfRangeException()
         };
     }
@@ -47,6 +48,18 @@ public class JobFactory
         return BuildSyncRemoteToRemoteJob(jobDto.Name, concreteJobValue);
     }
 
+    private Job BuildSyncRemoteToLocalJob(JobDto jobDto)
+    {
+        var concreteJobValue = JsonSerializer.Deserialize<SyncRemoteToLocalJobValue>(jobDto.Data);
+
+        if (concreteJobValue == null)
+        {
+            throw new Exception();
+        }
+
+        return BuildSyncRemoteToLocalJob(jobDto.Name, concreteJobValue);
+    }
+
     private Job BuildSyncRemoteToRemoteJob(string name, SyncRemoteToRemoteJobValue concreteJobValue)
     {
         var originRemoteServiceType = Enum.Parse<IRemoteService.ServiceType>(concreteJobValue.SourceType);
@@ -59,6 +72,19 @@ public class JobFactory
             _jobFragmentFactory.BuildFetchRemotePlaylistJobFragment(originRemoteService, concreteJobValue.SourceId, concreteJobValue.Id),
             _jobFragmentFactory.BuildUpdateRemoteIdsJobFragment(destinationRemoteService, concreteJobValue.Id),
             _jobFragmentFactory.BuildUpdateRemotePlaylistJobFragment(destinationRemoteService, concreteJobValue.DestinationId, concreteJobValue.Id)
+        };
+
+        return new Job(name, jobFragments, _loggerFactory.CreateLogger($"{typeof(Job)}.{name}"));
+    }
+
+    private Job BuildSyncRemoteToLocalJob(string name, SyncRemoteToLocalJobValue concreteJobValue)
+    {
+        var originRemoteServiceType = Enum.Parse<IRemoteService.ServiceType>(concreteJobValue.SourceType);
+        var originRemoteService = GetRemoteService(originRemoteServiceType);
+
+        var jobFragments = new JobFragmentBase[]
+        {
+            _jobFragmentFactory.BuildFetchRemotePlaylistJobFragment(originRemoteService, concreteJobValue.SourceId, concreteJobValue.LocalPlaylistName),
         };
 
         return new Job(name, jobFragments, _loggerFactory.CreateLogger($"{typeof(Job)}.{name}"));
