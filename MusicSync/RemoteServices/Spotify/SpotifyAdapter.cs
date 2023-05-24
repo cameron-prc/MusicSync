@@ -14,6 +14,7 @@ public class SpotifyAdapter : ISpotifyAdapter
 {
     private readonly SpotifyConfiguration _configuration;
     private SpotifyClient? _client;
+    private Authorisation? _authorisation;
 
     public SpotifyAdapter(IConfiguration configuration)
     {
@@ -22,16 +23,21 @@ public class SpotifyAdapter : ISpotifyAdapter
 
     public async Task<SpotifyClient> Client()
     {
-        return _client ??= await BuildSpotifyClient();
+        if (_client == null || _authorisation?.ExpiresIn < DateTime.UtcNow.Millisecond)
+        {
+            _client = await BuildSpotifyClient();
+        }
+
+        return _client;
     }
 
     private async Task<SpotifyClient> BuildSpotifyClient()
     {
-        var accessToken = await GetAccessToken(_configuration);
+        _authorisation = await GetAuthorisation(_configuration);
 
-        return new SpotifyClient(accessToken);
+        return new SpotifyClient(_authorisation.AccessToken);
     }
-    private static async Task<string> GetAccessToken(SpotifyConfiguration configuration)
+    private static async Task<Authorisation> GetAuthorisation(SpotifyConfiguration configuration)
     {
         var formData = new[]
         {
@@ -59,17 +65,17 @@ public class SpotifyAdapter : ISpotifyAdapter
         }
 
         var contentString = await response.Content.ReadAsStringAsync();
-        var refreshAccessTokenResponse = JsonSerializer.Deserialize<RefreshAccessTokenResponse>(contentString);
+        var authorisation = JsonSerializer.Deserialize<Authorisation>(contentString);
 
-        if (refreshAccessTokenResponse == null)
+        if (authorisation == null)
         {
             throw new Exception($"Failed to deserialize CreateClientResult. StatusCode: '{response.StatusCode}' ResponseContent: '{contentString}'");
         }
 
-        return refreshAccessTokenResponse.AccessToken;
+        return authorisation;
     }
 
-    public class RefreshAccessTokenResponse
+    public class Authorisation
     {
         [JsonPropertyName("access_token")]
         public string AccessToken { get; set; }
