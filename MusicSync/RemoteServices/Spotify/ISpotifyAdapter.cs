@@ -5,5 +5,5 @@ namespace MusicSync.RemoteServices.Spotify;
 
 public interface ISpotifyAdapter
 {
-    Task<SpotifyClient> BuildSpotifyClient();
+    Task<SpotifyClient> Client();
 }

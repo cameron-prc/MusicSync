@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using MusicSync.Common;
 using SpotifyAPI.Web;
@@ -12,12 +11,12 @@ namespace MusicSync.RemoteServices.Spotify;
 public class SpotifyService : ISpotifyService
 {
     private readonly ILogger<SpotifyService> _logger;
-    private readonly SpotifyClient _client;
+    private readonly ISpotifyAdapter _adapter;
 
-    public SpotifyService(IConfiguration configuration, ILogger<SpotifyService> logger)
+    public SpotifyService(ISpotifyAdapter adapter, ILogger<SpotifyService> logger)
     {
         _logger = logger;
-        _client = new SpotifyAdapter(configuration).BuildSpotifyClient().Result;
+        _adapter = adapter;
     }
 
     public IRemoteService.ServiceType Type()
@@ -27,8 +26,10 @@ public class SpotifyService : ISpotifyService
 
     public async Task<IEnumerable<RemoteTrack>> GetPlaylist(string playlistId)
     {
+        var client = await _adapter.Client();
+
         _logger.LogDebug("Fetching playlist PlaylistId: '{playlistId}'", playlistId);
-        var playlist = await _client.Playlists.Get(playlistId);
+        var playlist = await client.Playlists.Get(playlistId);
 
         if (playlist == null)
         {
@@ -42,7 +43,7 @@ public class SpotifyService : ISpotifyService
             return new List<RemoteTrack>();
         }
         
-        var tracks = await _client.PaginateAll(playlist.Tracks);
+        var tracks = await client.PaginateAll(playlist.Tracks);
         var remoteTracks = new List<RemoteTrack>();
         
         foreach (var item in tracks)
@@ -58,6 +59,8 @@ public class SpotifyService : ISpotifyService
 
     public async Task<RemoteTrack?> SearchTracks(TrackEntity track)
     {
+        var client = await _adapter.Client();
+
         if (track.Title == null || track.ArtistName == null)
         {
             _logger.LogInformation("Unable to search for track Title: '{title}' Artist: '{artistName}', one or more values are empty", track.Title, track.ArtistName);
@@ -65,7 +68,7 @@ public class SpotifyService : ISpotifyService
         }
 
         var searchRequest = new SearchRequest(SearchRequest.Types.Track, $"track:${track.Title} artist:${track.ArtistName}");
-        var result = await _client.Search.Item(searchRequest);
+        var result = await client.Search.Item(searchRequest);
 
         _logger.LogDebug("Found {totalNumberOfResults} results for Title: '{title}' Artist: '{artistName}'", result.Tracks.Items?.Count, track.Title, track.ArtistName);
 
@@ -76,6 +79,8 @@ public class SpotifyService : ISpotifyService
 
     public async Task AddToPlaylist(string playlistId, IList<TrackEntity> tracks)
     {
+        var client = await _adapter.Client();
+
         var spotifyUris = tracks
             .Select(track => track.GetSpotifyUri())
             .Where(spotifyUri => spotifyUri != null)
@@ -93,7 +98,7 @@ public class SpotifyService : ISpotifyService
 
         var request = new PlaylistAddItemsRequest(spotifyUris);
 
-        await _client.Playlists.AddItems(playlistId, request);
+        await client.Playlists.AddItems(playlistId, request);
     }
 
     public Task AddToPlaylist(IList<TrackEntity> tracks)

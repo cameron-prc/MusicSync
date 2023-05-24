@@ -13,13 +13,19 @@ namespace MusicSync.RemoteServices.Spotify;
 public class SpotifyAdapter : ISpotifyAdapter
 {
     private readonly SpotifyConfiguration _configuration;
+    private SpotifyClient? _client;
 
     public SpotifyAdapter(IConfiguration configuration)
     {
         _configuration = configuration.GetSection("Spotify").Get<SpotifyConfiguration>();;
     }
 
-    public async Task<SpotifyClient> BuildSpotifyClient()
+    public async Task<SpotifyClient> Client()
+    {
+        return _client ??= await BuildSpotifyClient();
+    }
+
+    private async Task<SpotifyClient> BuildSpotifyClient()
     {
         var accessToken = await GetAccessToken(_configuration);
 
