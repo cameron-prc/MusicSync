@@ -41,6 +41,7 @@ class Program
                 services.AddTransient<IRepositoryClient, PlaylistRepository>();
                 services.AddSingleton<IDatabase, Sqlite>();
                 services.AddTransient<PlaylistSyncer>();
+                services.AddSingleton<ISpotifyAdapter, SpotifyAdapter>();
                 services.AddSingleton<ISpotifyService, SpotifyService>();
                 services.AddSingleton<IYoutubeService, YoutubeService>();
                 services.AddSingleton<JobFactory>();
