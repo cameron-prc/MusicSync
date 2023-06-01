@@ -77,7 +77,7 @@ public class PlaylistRepository : IRepositoryClient
         };
         var query = $"UPDATE Tracks SET {queryKey} = @RemoteId WHERE LocalId = @LocalId";
 
-        _logger.LogDebug("Setting {queryKey} to '' for TrackId: {localId}", queryKey, track.LocalId);
+        _logger.LogDebug("Setting {queryKey} to '{remoteId}' for TrackId: '{Id}'", queryKey, track.GetId(remoteServiceType), track.Id);
 
         await using var connection = _database.GetConnection();
         await connection.ExecuteAsync(query, new { RemoteId = track.GetId(remoteServiceType), LocalId = track.LocalId});
