@@ -11,6 +11,8 @@ namespace MusicSync.Repository
         public Task<PlaylistEntity> CreatePlaylist(string name);
         public Task AddToPlaylist(string playlistId, IEnumerable<TrackEntity> tracks);
         Task CreateTracks(List<TrackEntity> tracks, IRemoteService.ServiceType remoteServiceType);
+        Task CreateArtists(List<ArtistEntity> artists);
         Task SetRemoteId(TrackEntity track, IRemoteService.ServiceType serviceType);
+        Task<IEnumerable<ArtistEntity>> FetchArtists(IEnumerable<string> artistIds);
     }
 }

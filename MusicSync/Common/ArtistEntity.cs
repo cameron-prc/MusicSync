@@ -3,41 +3,29 @@ using MusicSync.RemoteServices;
 
 namespace MusicSync.Common;
 
-public class TrackEntity
+public class ArtistEntity
 {
-    public string? Title { get; init; }
-    public ArtistEntity Artist { get; init; }
-    public string? YoutubeId { get; set; }
+    public string Id { get; } = null!;
+    public string Name { get; }
     public string? SpotifyId { get; set; }
-    public string Id { get; set; } = null!;
+    public string? YoutubeId { get; set; }
 
-    public TrackEntity() {}
-
-    public TrackEntity(TrackDto dto, ArtistEntity artist)
-    {
-        Title = dto.Title;
-        Artist = artist;
-
-        Id = dto.Id;
-        YoutubeId = dto.YoutubeId;
-        SpotifyId = dto.SpotifyId;
-    }
-
-    public TrackEntity(RemoteTrack track, ArtistEntity artist)
+    public ArtistEntity() {}
+    
+    public ArtistEntity(RemoteArtist artist)
     {
         Id = Guid.NewGuid().ToString();
-        Title = track.TrackName;
-        Artist = artist;
+        Name = artist.Name;
 
-        SetRemoteId(track.RemoteServiceType, track.RemoteId);
+        SetRemoteId(artist.RemoteServiceType, artist.RemoteId);
     }
-
+    
     public string? GetId(IRemoteService.ServiceType remoteServiceType)
     {
         return remoteServiceType switch
         {
-            IRemoteService.ServiceType.YouTube => YoutubeId,
             IRemoteService.ServiceType.Spotify => SpotifyId,
+            IRemoteService.ServiceType.YouTube => YoutubeId,
             _ => throw new ArgumentOutOfRangeException(nameof(remoteServiceType), remoteServiceType, null)
         };
     }
@@ -46,11 +34,11 @@ public class TrackEntity
     {
         switch (remoteServiceType)
         {
-            case IRemoteService.ServiceType.YouTube:
-                YoutubeId = remoteId;
-                break;
             case IRemoteService.ServiceType.Spotify:
                 SpotifyId = remoteId;
+                break;
+            case IRemoteService.ServiceType.YouTube:
+                YoutubeId = remoteId;
                 break;
             default:
                 throw new ArgumentOutOfRangeException(nameof(remoteServiceType), remoteServiceType, null);

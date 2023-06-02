@@ -25,11 +25,34 @@ public class UpdateLocalPlaylistJobFragment : JobFragmentBase
     {
         var local = await FetchLocal(LocalPlaylistId);
         var remote = await FetchRemotePlaylist(SourceId);
-        var newTracks = FindNewTracks(local, remote);
-        
-        if (newTracks.Count > 0)
+        var newRemoteTracks = FindNewTracks(local, remote);
+
+        if (newRemoteTracks.Count > 0)
         {
-            context.Logger.LogInformation("Adding {newTracksCount} new tracks from {sourceType} playlist: '{playlistId}'", newTracks.Count, remote.GetType().ToString(), SourceId);
+            context.Logger.LogInformation("Adding {newTracksCount} new tracks from {sourceType} playlist: '{playlistId}'", newRemoteTracks.Count, RemotePlaylistService.GetType().ToString(), SourceId);
+        }
+        
+        var artistIds = newRemoteTracks.Select(track => track.Artist?.RemoteId);
+        
+        var artists = await RepositoryClient.FetchArtists(artistIds);
+        var newArtists = newRemoteTracks
+            .Select(track => track.Artist)
+            .Where(remoteArtist => artists.All(artist => artist.GetId(RemotePlaylistService.Type()) != remoteArtist.RemoteId))
+            .Select(remoteArtist => new ArtistEntity(remoteArtist!))
+            .ToList();
+
+        await RepositoryClient.CreateArtists(newArtists);
+
+        artists = artists.Concat(newArtists).ToList();
+
+        var newTracks = new List<TrackEntity>();
+
+        foreach (var newTrack in newRemoteTracks)
+        {
+            var artist = artists.First(x => x.GetId(RemotePlaylistService.Type()) == newTrack.Artist?.RemoteId);
+            var track = new TrackEntity(newTrack, artist);
+
+            newTracks.Add(track);
         }
 
         await RepositoryClient.CreateTracks(newTracks, RemotePlaylistService.Type());
@@ -41,13 +64,12 @@ public class UpdateLocalPlaylistJobFragment : JobFragmentBase
         return await RemotePlaylistService.GetPlaylist(remoteId);
     }
 
-    private List<TrackEntity> FindNewTracks(PlaylistEntity localPlaylistEntity, IEnumerable<RemoteTrack> remotePlaylist)
+    private List<RemoteTrack> FindNewTracks(PlaylistEntity localPlaylistEntity, IEnumerable<RemoteTrack> remotePlaylist)
     {
         return remotePlaylist
             .Where(remoteTrack =>
                 !localPlaylistEntity.Tracks.Select(track => track.GetId(RemotePlaylistService.Type())).Contains(remoteTrack.RemoteId)
             )
-            .Select(remoteTrack => new TrackEntity(remoteTrack))
             .ToList();
     }
 }

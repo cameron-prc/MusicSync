@@ -36,7 +36,15 @@ public class Sqlite : IDatabase
 
         if (tracksTable == null)
         {
-            connection.Execute("CREATE TABLE Tracks(LocalId VARCHAR(45) PRIMARY KEY, YoutubeId VARCHAR(45), SpotifyId VARCHAR(45), Title VARCHAR(45), ArtistName VARCHAR(45));");
+            connection.Execute("CREATE TABLE Tracks(Id VARCHAR(45) PRIMARY KEY, YoutubeId VARCHAR(45), SpotifyId VARCHAR(45), Title VARCHAR(45), ArtistId VARCHAR(45) REFERENCES Artists(Id));");
+        }
+        
+        var artistsTable =
+            connection.Query("SELECT name from sqlite_master WHERE type = 'table' AND name = 'Artists';").FirstOrDefault();
+
+        if (artistsTable == null)
+        {
+            connection.Execute("CREATE TABLE Artists(Id VARCHAR(45) PRIMARY KEY, Name VARCHAR(45), SpotifyId VARCHAR(45), YoutubeId VARCHAR(45));");
         }
         
         var playlistEntryJoinTable =
@@ -44,7 +52,7 @@ public class Sqlite : IDatabase
 
         if (playlistEntryJoinTable == null)
         {
-            connection.Execute("CREATE TABLE PlaylistEntries(PlaylistId VARCHAR(45) REFERENCES Playlists(Id), TrackId VARCHAR(45) REFERENCES Tracks(LocalId));");
+            connection.Execute("CREATE TABLE PlaylistEntries(PlaylistId VARCHAR(45) REFERENCES Playlists(Id), TrackId VARCHAR(45) REFERENCES Tracks(Id));");
         }
     }
 }

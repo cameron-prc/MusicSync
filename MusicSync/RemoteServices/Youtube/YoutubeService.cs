@@ -76,21 +76,26 @@ public class YoutubeService : IYoutubeService
 
     public async Task<RemoteTrack?> SearchTracks(TrackEntity track)
     {
-        if (track.Title == null || track.ArtistName == null)
+        if (track.Title == null)
         {
-            _logger.LogInformation("Unable to search for track Title: '{title}' Artist: '{artistName}', one or more values are empty", track.Title, track.ArtistName);
+            _logger.LogInformation("Unable to search for track Title: '{title}' Artist: '{artistName}', one or more values are empty", track.Title, track.Artist.Name);
             return null;
         }
 
         var request = _service.Search.List("snippet");
-        request.Q = $"{track.Title} {track.ArtistName}";
+        request.Q = $"{track.Title} {track.Artist.Name}";
         request.MaxResults = 10;
+
+        if (track.Artist.YoutubeId != null)
+        {
+            request.ChannelId = track.Artist.YoutubeId;
+        }
 
         var searchResult = await request.ExecuteAsync();
         
-        _logger.LogDebug("Found {totalNumberOfResults} results for Title: '{title}' Artist: '{artistName}'", searchResult.Items.Count, track.Title, track.ArtistName);
+        _logger.LogDebug("Found {totalNumberOfResults} results for Title: '{title}' Artist: '{artistName}'", searchResult.Items.Count, track.Title, track.Artist.Name);
 
-        return searchResult.Items.FirstOrDefault()?.ToRemoteTrack(track);
+        return searchResult.Items.FirstOrDefault()?.ToRemoteTrack();
     }
 
     public async Task AddToPlaylist(string playlistId, IList<TrackEntity> tracks)

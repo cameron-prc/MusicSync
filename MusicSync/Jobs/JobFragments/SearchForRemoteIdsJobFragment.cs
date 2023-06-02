@@ -40,6 +40,12 @@ public class SearchForRemoteIdsJobFragment : JobFragmentBase
             if (remoteTrack != null)
             {
                 track.SetRemoteId(RemoteService.Type(), remoteTrack.RemoteId);
+
+                if (string.IsNullOrWhiteSpace(track.Artist.GetId(RemoteService.Type())) && !string.IsNullOrWhiteSpace(remoteTrack.Artist?.RemoteId))
+                {
+                    track.Artist.SetRemoteId(RemoteService.Type(), remoteTrack.Artist.RemoteId);
+                }
+                
                 await RepositoryClient.SetRemoteId(track, RemoteService.Type());
 
                 updatedTracksCount += 1;

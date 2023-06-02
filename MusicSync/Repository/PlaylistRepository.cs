@@ -44,7 +44,7 @@ public class PlaylistRepository : IRepositoryClient
 
         foreach (var entry in newEntries)
         {
-            @params.Add(new { PlaylistId = playlistId, TrackId = entry.LocalId });
+            @params.Add(new { PlaylistId = playlistId, TrackId = entry.Id });
         }
 
         await using var connection = _database.GetConnection();
@@ -59,11 +59,25 @@ public class PlaylistRepository : IRepositoryClient
     {
         _logger.LogInformation("Persisting {newTrackCount} new tracks", tracks.Count);
 
+        var trackDtos = tracks.Select(track => new TrackDto(track));
+        
         await using var connection = _database.GetConnection();
 
         await connection.ExecuteAsync(@"
-                INSERT INTO Tracks(LocalId, YoutubeId, Title, ArtistName, SpotifyId)
-                VALUES(@LocalId, @YoutubeId, @Title, @ArtistName, @SpotifyId)", tracks
+                INSERT INTO Tracks(Id, YoutubeId, Title, SpotifyId, ArtistId)
+                VALUES(@Id, @YoutubeId, @Title, @SpotifyId, @ArtistId)", trackDtos
+        );
+    }
+
+    public async Task CreateArtists(List<ArtistEntity> artists)
+    {
+        _logger.LogInformation("Persisting {newArtistCount} new artists", artists.Count);
+
+        await using var connection = _database.GetConnection();
+
+        await connection.ExecuteAsync(@"
+                INSERT INTO Artists(Id, Name, SpotifyId, YoutubeId)
+                VALUES(@Id, @Name, @SpotifyId, @YoutubeId)", artists
         );
     }
 
@@ -75,12 +89,23 @@ public class PlaylistRepository : IRepositoryClient
             IRemoteService.ServiceType.Spotify => "SpotifyId",
             _ => throw new ArgumentOutOfRangeException(nameof(remoteServiceType), remoteServiceType, null)
         };
-        var query = $"UPDATE Tracks SET {queryKey} = @RemoteId WHERE LocalId = @LocalId";
+        var query = $"UPDATE Tracks SET {queryKey} = @RemoteId WHERE Id = @Id";
 
         _logger.LogDebug("Setting {queryKey} to '{remoteId}' for TrackId: '{Id}'", queryKey, track.GetId(remoteServiceType), track.Id);
 
         await using var connection = _database.GetConnection();
-        await connection.ExecuteAsync(query, new { RemoteId = track.GetId(remoteServiceType), LocalId = track.LocalId});
+        await connection.ExecuteAsync(query, new { RemoteId = track.GetId(remoteServiceType), track.Id});
+    }
+
+    public async Task<IEnumerable<ArtistEntity>> FetchArtists(IEnumerable<string> artistIds)
+    {
+        await using var connection = _database.GetConnection();
+
+        return await connection.QueryAsync<ArtistEntity>(@"
+                    SELECT *
+                    FROM Artists
+                    WHERE Id IN @Ids", new { Ids = artistIds }
+                );
     }
 
     async Task<PlaylistEntity?> IRepositoryClient.GetPlaylist(string name)
@@ -91,22 +116,24 @@ public class PlaylistRepository : IRepositoryClient
 
         PlaylistEntity? playlist = null;
 
-        var queryAsync = (await connection.QueryAsync<PlaylistEntity, TrackEntity, PlaylistEntity>(@"
-                    SELECT p.*, t.*
+        var queryAsync = (await connection.QueryAsync<PlaylistEntity, TrackDto, ArtistEntity, PlaylistEntity>(@"
+                    SELECT p.*, t.*, a.*
                     FROM Playlists p
                     INNER JOIN PlaylistEntries pe
                     ON pe.PlaylistId = p.Id
                     INNER JOIN Tracks t
-                    ON t.LocalId = pe.TrackId
+                    ON t.Id = pe.TrackId
+                    INNER JOIN Artists a
+                    ON t.ArtistId = a.Id
                     WHERE p.Name = @Name
 
-                    ", (playlistDto, track) =>
+                    ", (playlistEntity, track, artist) =>
                     {
-                        playlist ??= playlistDto;
+                        playlist ??= playlistEntity;
 
-                        playlist.Tracks.Add(track);
+                        playlist.Tracks.Add(new TrackEntity(track, artist));
                         return playlist;
-                    }, new { Name = name }, splitOn: "LocalId"
+                    }, new { Name = name }
                 )
             );
 

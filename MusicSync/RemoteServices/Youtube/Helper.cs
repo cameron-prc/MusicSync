@@ -21,12 +21,14 @@ public static class Helper
             trackName = StripSurroundingQuotes(artistTitlePair[1].Trim());
         }
 
+        var artist = new RemoteArtist(IRemoteService.ServiceType.YouTube, playlistItem.Snippet.VideoOwnerChannelId, artistName);
+
         return new RemoteTrack
         {
             RemoteId = playlistItem.Snippet.ResourceId.VideoId,
             RemoteServiceType = IRemoteService.ServiceType.YouTube,
             TrackName = trackName,
-            ArtistName =artistName
+            Artist = artist
         };
     }
 
@@ -62,12 +64,26 @@ public static class Helper
         return title.Trim('"').Trim('\'');
     }
 
-    public static RemoteTrack ToRemoteTrack(this SearchResult searchResult, TrackEntity originalTrack)
+    public static RemoteTrack ToRemoteTrack(this SearchResult searchResult)
     {
+        var artistName = string.Empty;
+        var trackName = string.Empty;
+        var originalTitle = searchResult.Snippet.Title;
+        var trimmedTitle = TrimFeaturing(TrimVideoTagAnnotations(originalTitle));
+        var artistTitlePair = trimmedTitle.Split(" - ");
+
+        if (artistTitlePair.Length == 2)
+        {
+            artistName = artistTitlePair[0].Trim();
+            trackName = StripSurroundingQuotes(artistTitlePair[1].Trim());
+        }
+
+        var artist = new RemoteArtist(IRemoteService.ServiceType.YouTube, searchResult.Snippet.ChannelId, artistName);
+
         return new RemoteTrack
         {
-            ArtistName = originalTrack.ArtistName,
-            TrackName = originalTrack.Title,
+            Artist = artist,
+            TrackName = trackName,
             RemoteId = searchResult.Id.VideoId,
             RemoteServiceType = IRemoteService.ServiceType.YouTube
         };

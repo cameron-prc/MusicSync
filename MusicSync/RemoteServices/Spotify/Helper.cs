@@ -11,10 +11,15 @@ public static class Helper
         return new RemoteTrack
         {
             RemoteId = fullTrack.Id,
-            RemoteServiceType = IRemoteService.ServiceType.Spotify,
             TrackName = fullTrack.Name,
-            ArtistName = fullTrack.Artists.First().Name // First artist is the primary artist
+            Artist = fullTrack.Artists.First().ToRemoteArtist(),
+            RemoteServiceType = IRemoteService.ServiceType.Spotify
         };
+    }
+
+    public static RemoteArtist ToRemoteArtist(this SimpleArtist artist)
+    {
+        return new RemoteArtist(IRemoteService.ServiceType.Spotify, artist.Id, artist.Name);
     }
 
     public static string? GetSpotifyUri(this TrackEntity track)

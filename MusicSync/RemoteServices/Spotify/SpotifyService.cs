@@ -61,16 +61,16 @@ public class SpotifyService : ISpotifyService
     {
         var client = await _adapter.Client();
 
-        if (track.Title == null || track.ArtistName == null)
+        if (track.Title == null)
         {
-            _logger.LogInformation("Unable to search for track Title: '{title}' Artist: '{artistName}', one or more values are empty", track.Title, track.ArtistName);
+            _logger.LogInformation("Unable to search for track Title: '{title}' Artist: '{artistName}'", track.Title, track.Artist.Name);
             return null;
         }
 
-        var searchRequest = new SearchRequest(SearchRequest.Types.Track, $"track:${track.Title} artist:${track.ArtistName}");
+        var searchRequest = new SearchRequest(SearchRequest.Types.Track, $"track:${track.Title} artist:${track.Artist.Name}");
         var result = await client.Search.Item(searchRequest);
 
-        _logger.LogDebug("Found {totalNumberOfResults} results for Title: '{title}' Artist: '{artistName}'", result.Tracks.Items?.Count, track.Title, track.ArtistName);
+        _logger.LogDebug("Found {totalNumberOfResults} results for Title: '{title}' Artist: '{artistName}'", result.Tracks.Items?.Count, track.Title, track.Artist.Name);
 
         var firstTrackResult = result.Tracks.Items?.FirstOrDefault();
 
