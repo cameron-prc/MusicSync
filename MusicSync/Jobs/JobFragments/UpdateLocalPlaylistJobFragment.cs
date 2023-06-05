@@ -59,14 +59,15 @@ public class UpdateLocalPlaylistJobFragment : JobFragmentBase
         await RepositoryClient.AddToPlaylist(local.Id, newTracks);
     }
 
-    private async Task<IEnumerable<RemoteTrack>> FetchRemotePlaylist(string remoteId)
+    private async Task<RemotePlaylist> FetchRemotePlaylist(string remoteId)
     {
         return await RemotePlaylistService.GetPlaylist(remoteId);
     }
 
-    private List<RemoteTrack> FindNewTracks(PlaylistEntity localPlaylistEntity, IEnumerable<RemoteTrack> remotePlaylist)
+    private List<RemoteTrack> FindNewTracks(PlaylistEntity localPlaylistEntity, RemotePlaylist remotePlaylist)
     {
         return remotePlaylist
+            .Tracks
             .Where(remoteTrack =>
                 !localPlaylistEntity.Tracks.Select(track => track.GetId(RemotePlaylistService.Type())).Contains(remoteTrack.RemoteId)
             )

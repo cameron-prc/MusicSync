@@ -6,6 +6,5 @@ public class RemotePlaylist
 {
     public IRemoteService.ServiceType ServiceType;
     public string Id;
-    public string Name;
-    private IEnumerable<RemoteTrack> Tracks;
+    public IEnumerable<RemoteTrack> Tracks;
 }

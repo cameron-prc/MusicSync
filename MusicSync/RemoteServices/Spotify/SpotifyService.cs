@@ -24,12 +24,13 @@ public class SpotifyService : ISpotifyService
         return IRemoteService.ServiceType.Spotify;
     }
 
-    public async Task<IEnumerable<RemoteTrack>> GetPlaylist(string playlistId)
+    public async Task<RemotePlaylist> GetPlaylist(string playlistId)
     {
         var client = await _adapter.Client();
 
         _logger.LogDebug("Fetching playlist PlaylistId: '{playlistId}'", playlistId);
         var playlist = await client.Playlists.Get(playlistId);
+        var remoteTracks = new List<RemoteTrack>();
 
         if (playlist == null)
         {
@@ -38,23 +39,25 @@ public class SpotifyService : ISpotifyService
 
         _logger.LogDebug("Playlist retrieved with {totalTracks} track'", playlist.Tracks?.Total);
 
-        if (playlist.Tracks == null)
+        if (playlist.Tracks != null)
         {
-            return new List<RemoteTrack>();
-        }
-        
-        var tracks = await client.PaginateAll(playlist.Tracks);
-        var remoteTracks = new List<RemoteTrack>();
-        
-        foreach (var item in tracks)
-        {
-            if (item.Track is FullTrack track)
+            var tracks = await client.PaginateAll(playlist.Tracks);
+
+            foreach (var item in tracks)
             {
-                remoteTracks.Add(track.ToRemoteTrack());
+                if (item.Track is FullTrack track)
+                {
+                    remoteTracks.Add(track.ToRemoteTrack());
+                }
             }
         }
 
-        return remoteTracks;
+        return new RemotePlaylist
+        {
+            Id = playlistId,
+            ServiceType = IRemoteService.ServiceType.Spotify,
+            Tracks = remoteTracks
+        };
     }
 
     public async Task<RemoteTrack?> SearchTracks(TrackEntity track)

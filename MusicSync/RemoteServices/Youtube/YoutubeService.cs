@@ -45,7 +45,7 @@ public class YoutubeService : IYoutubeService
         return IRemoteService.ServiceType.YouTube;
     }
 
-    public Task<IEnumerable<RemoteTrack>> GetPlaylist(string playlistId)
+    public Task<RemotePlaylist> GetPlaylist(string playlistId)
     {
         _logger.LogDebug("Fetching playlist PlaylistId: '{playlistId}'", playlistId);
 
@@ -71,7 +71,14 @@ public class YoutubeService : IYoutubeService
         var remoteTracks = playlistItems
             .Select(playlistItem => playlistItem.ToRemoteTrack());
 
-        return Task.FromResult(remoteTracks);
+        var playlist = new RemotePlaylist
+        {
+            Id = playlistId,
+            ServiceType = IRemoteService.ServiceType.YouTube,
+            Tracks = remoteTracks
+        };
+
+        return Task.FromResult(playlist);
     }
 
     public async Task<RemoteTrack?> SearchTracks(TrackEntity track)

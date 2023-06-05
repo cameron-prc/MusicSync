@@ -24,7 +24,7 @@ public class UpdateRemotePlaylistJobFragment : JobFragmentBase
         var localPlaylist = await FetchLocal(LocalPlaylistId);
         var remotePlaylist =  await RemotePlaylistService.GetPlaylist(DestinationId);
         var localTracksWithRemoteId = localPlaylist.Tracks.Where(track => track.GetId(RemotePlaylistService.Type()) != null);
-        var remoteIds = remotePlaylist.Select(remoteTrack => remoteTrack.RemoteId);
+        var remoteIds = remotePlaylist.Tracks.Select(remoteTrack => remoteTrack.RemoteId);
         var missingTracks = localTracksWithRemoteId
             .Where(entity => !remoteIds.Contains(entity.GetId(RemotePlaylistService.Type())))
             .ToList();
