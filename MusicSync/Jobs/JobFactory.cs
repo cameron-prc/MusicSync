@@ -24,70 +24,44 @@ public class JobFactory
         _loggerFactory = loggerFactory;
     }
 
-    public Job BuildJob(JobDto jobDto)
+    public Job BuildJob(JobValueBase jobValue)
     {
-        var jobType = Enum.Parse<JobType>(jobDto.Type);
-
-        return jobType switch
+        return jobValue switch
         {
-            JobType.SyncRemoteToRemote => BuildSyncRemoteToRemoteJob(jobDto),
-            JobType.SyncRemoteToLocal => BuildSyncRemoteToLocalJob(jobDto),
+            SyncRemoteToRemoteJobValue syncRemoteToRemoteJobValue => BuildSyncRemoteToRemoteJob(syncRemoteToRemoteJobValue),
+            SyncRemoteToLocalJobValue syncRemoteToLocalJobValue => BuildSyncRemoteToLocalJob(syncRemoteToLocalJobValue),
             _ => throw new ArgumentOutOfRangeException()
         };
     }
 
-    private Job BuildSyncRemoteToRemoteJob(JobDto jobDto)
+    private Job BuildSyncRemoteToRemoteJob(SyncRemoteToRemoteJobValue jobValue)
     {
-        var concreteJobValue = JsonSerializer.Deserialize<SyncRemoteToRemoteJobValue>(jobDto.Data);
-
-        if (concreteJobValue == null)
-        {
-            throw new Exception();
-        }
-
-        return BuildSyncRemoteToRemoteJob(jobDto.Name, concreteJobValue);
-    }
-
-    private Job BuildSyncRemoteToLocalJob(JobDto jobDto)
-    {
-        var concreteJobValue = JsonSerializer.Deserialize<SyncRemoteToLocalJobValue>(jobDto.Data);
-
-        if (concreteJobValue == null)
-        {
-            throw new Exception();
-        }
-
-        return BuildSyncRemoteToLocalJob(jobDto.Name, concreteJobValue);
-    }
-
-    private Job BuildSyncRemoteToRemoteJob(string name, SyncRemoteToRemoteJobValue concreteJobValue)
-    {
-        var originRemoteServiceType = Enum.Parse<IRemoteService.ServiceType>(concreteJobValue.SourceType);
-        var destinationRemoteServiceType = Enum.Parse<IRemoteService.ServiceType>(concreteJobValue.DestinationType);
+        var originRemoteServiceType = Enum.Parse<IRemoteService.ServiceType>(jobValue.SourceType);
+        var destinationRemoteServiceType = Enum.Parse<IRemoteService.ServiceType>(jobValue.DestinationType);
         var originRemoteService = GetRemoteService(originRemoteServiceType);
         var destinationRemoteService = GetRemoteService(destinationRemoteServiceType);
 
         var jobFragments = new JobFragmentBase[]
         {
-            _jobFragmentFactory.BuildFetchRemotePlaylistJobFragment(originRemoteService, concreteJobValue.SourceId, concreteJobValue.Id),
-            _jobFragmentFactory.BuildUpdateRemoteIdsJobFragment(destinationRemoteService, concreteJobValue.Id),
-            _jobFragmentFactory.BuildUpdateRemotePlaylistJobFragment(destinationRemoteService, concreteJobValue.DestinationId, concreteJobValue.Id)
+            _jobFragmentFactory.BuildFetchRemotePlaylistJobFragment(originRemoteService, jobValue.SourceId, jobValue.Id),
+            _jobFragmentFactory.BuildUpdateRemoteIdsJobFragment(destinationRemoteService, jobValue.Id),
+            _jobFragmentFactory.BuildUpdateRemotePlaylistJobFragment(destinationRemoteService, jobValue.DestinationId, jobValue.Id)
         };
 
-        return new Job(name, jobFragments, _loggerFactory.CreateLogger($"{typeof(Job)}.{name}"));
+        return new Job(jobValue.Name, jobFragments, _loggerFactory.CreateLogger($"{typeof(Job)}.{jobValue.Name}"));
     }
 
-    private Job BuildSyncRemoteToLocalJob(string name, SyncRemoteToLocalJobValue concreteJobValue)
+    private Job BuildSyncRemoteToLocalJob(SyncRemoteToLocalJobValue jobValue)
     {
-        var originRemoteServiceType = Enum.Parse<IRemoteService.ServiceType>(concreteJobValue.SourceType);
+        var originRemoteServiceType = Enum.Parse<IRemoteService.ServiceType>(jobValue.SourceType);
         var originRemoteService = GetRemoteService(originRemoteServiceType);
 
         var jobFragments = new JobFragmentBase[]
         {
-            _jobFragmentFactory.BuildFetchRemotePlaylistJobFragment(originRemoteService, concreteJobValue.SourceId, concreteJobValue.LocalPlaylistName),
+            _jobFragmentFactory.BuildFetchRemotePlaylistJobFragment(originRemoteService, jobValue.SourceId, jobValue.LocalPlaylistName),
         };
 
-        return new Job(name, jobFragments, _loggerFactory.CreateLogger($"{typeof(Job)}.{name}"));
+        return new Job(jobValue.Name, jobFragments, _loggerFactory.CreateLogger($"{typeof(Job)}.{jobValue.Name}"));
     }
 
     private IRemotePlaylistService GetRemoteService(IRemoteService.ServiceType serviceType)
