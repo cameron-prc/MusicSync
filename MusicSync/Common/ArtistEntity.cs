@@ -9,6 +9,7 @@ public class ArtistEntity
     public string Name { get; }
     public string? SpotifyId { get; set; }
     public string? YoutubeId { get; set; }
+    public string? MusicBrainzId { get; set; }
 
     public ArtistEntity() {}
     
@@ -26,6 +27,7 @@ public class ArtistEntity
         {
             IRemoteService.ServiceType.Spotify => SpotifyId,
             IRemoteService.ServiceType.YouTube => YoutubeId,
+            IRemoteService.ServiceType.Lidarr => MusicBrainzId,
             _ => throw new ArgumentOutOfRangeException(nameof(remoteServiceType), remoteServiceType, null)
         };
     }
@@ -39,6 +41,9 @@ public class ArtistEntity
                 break;
             case IRemoteService.ServiceType.YouTube:
                 YoutubeId = remoteId;
+                break;
+            case IRemoteService.ServiceType.Lidarr:
+                MusicBrainzId = remoteId;
                 break;
             default:
                 throw new ArgumentOutOfRangeException(nameof(remoteServiceType), remoteServiceType, null);

@@ -76,9 +76,27 @@ public class PlaylistRepository : IRepositoryClient
         await using var connection = _database.GetConnection();
 
         await connection.ExecuteAsync(@"
-                INSERT INTO Artists(Id, Name, SpotifyId, YoutubeId)
-                VALUES(@Id, @Name, @SpotifyId, @YoutubeId)", artists
+                INSERT INTO Artists(Id, Name, SpotifyId, YoutubeId, MusicBrainzId)
+                VALUES(@Id, @Name, @SpotifyId, @YoutubeId, @MusicBrainzId)", artists
         );
+    }
+
+    public async Task SetRemoteId(ArtistEntity artist, IRemoteService.ServiceType remoteServiceType)
+    {
+        var queryKey = remoteServiceType switch
+        {
+            IRemoteService.ServiceType.YouTube => "YoutubeId",
+            IRemoteService.ServiceType.Spotify => "SpotifyId",
+            IRemoteService.ServiceType.Lidarr => "MusicBrainzId",
+            _ => throw new ArgumentOutOfRangeException(nameof(remoteServiceType), remoteServiceType, null)
+        };
+        // switch on subset
+        var query = $"UPDATE Artists SET {queryKey} = @RemoteId WHERE Id = @Id";
+
+        _logger.LogDebug("Setting {queryKey} to '{remoteId}' for ArtistId: '{Id}'", queryKey, artist.GetId(remoteServiceType), artist.Id);
+
+        await using var connection = _database.GetConnection();
+        await connection.ExecuteAsync(query, new { RemoteId = artist.GetId(remoteServiceType), artist.Id});
     }
 
     public async Task SetRemoteId(TrackEntity track, IRemoteService.ServiceType remoteServiceType)
@@ -87,6 +105,7 @@ public class PlaylistRepository : IRepositoryClient
         {
             IRemoteService.ServiceType.YouTube => "YoutubeId",
             IRemoteService.ServiceType.Spotify => "SpotifyId",
+            IRemoteService.ServiceType.Lidarr => throw new Exception("Invalid operation. Attempted to set Lidarr source on TrackEntity"),
             _ => throw new ArgumentOutOfRangeException(nameof(remoteServiceType), remoteServiceType, null)
         };
         var query = $"UPDATE Tracks SET {queryKey} = @RemoteId WHERE Id = @Id";
@@ -105,6 +124,16 @@ public class PlaylistRepository : IRepositoryClient
                     SELECT *
                     FROM Artists
                     WHERE Id IN @Ids", new { Ids = artistIds }
+                );
+    }
+
+    public async Task<IEnumerable<ArtistEntity>> FetchArtists()
+    {
+        await using var connection = _database.GetConnection();
+
+        return await connection.QueryAsync<ArtistEntity>(@"
+                    SELECT *
+                    FROM Artists"
                 );
     }
 

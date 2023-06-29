@@ -44,7 +44,7 @@ public class Sqlite : IDatabase
 
         if (artistsTable == null)
         {
-            connection.Execute("CREATE TABLE Artists(Id VARCHAR(45) PRIMARY KEY, Name VARCHAR(45), SpotifyId VARCHAR(45), YoutubeId VARCHAR(45));");
+            connection.Execute("CREATE TABLE Artists(Id VARCHAR(45) PRIMARY KEY, Name VARCHAR(45), SpotifyId VARCHAR(45), YoutubeId VARCHAR(45)), MusicBrainzId VARCHAR(45);");
         }
         
         var playlistEntryJoinTable =

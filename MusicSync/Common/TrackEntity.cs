@@ -52,6 +52,8 @@ public class TrackEntity
             case IRemoteService.ServiceType.Spotify:
                 SpotifyId = remoteId;
                 break;
+            case IRemoteService.ServiceType.Lidarr:
+                throw new Exception("Invalid remote type: Attempted to set Lidarr as source for track");
             default:
                 throw new ArgumentOutOfRangeException(nameof(remoteServiceType), remoteServiceType, null);
         }

@@ -7,6 +7,7 @@ public interface IRemoteService
     public enum ServiceType
     {
         YouTube,
-        Spotify
+        Spotify,
+        Lidarr
     }
 }

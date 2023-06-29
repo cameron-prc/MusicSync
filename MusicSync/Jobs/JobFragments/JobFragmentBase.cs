@@ -1,5 +1,5 @@
+using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
 using MusicSync.Common;
 using MusicSync.Repository;
 
@@ -22,5 +22,12 @@ public abstract class JobFragmentBase
                             await RepositoryClient.CreatePlaylist(localName);
 
         return localPlaylist;
+    }
+
+    protected async Task<IEnumerable<ArtistEntity>> FetchLocalArtists()
+    {
+        var localArtists = await RepositoryClient.FetchArtists();
+
+        return localArtists;
     }
 }

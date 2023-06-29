@@ -13,6 +13,8 @@ namespace MusicSync.Repository
         Task CreateTracks(List<TrackEntity> tracks, IRemoteService.ServiceType remoteServiceType);
         Task CreateArtists(List<ArtistEntity> artists);
         Task SetRemoteId(TrackEntity track, IRemoteService.ServiceType serviceType);
+        Task SetRemoteId(ArtistEntity artist, IRemoteService.ServiceType serviceType);
         Task<IEnumerable<ArtistEntity>> FetchArtists(IEnumerable<string> artistIds);
+        Task<IEnumerable<ArtistEntity>> FetchArtists();
     }
 }
