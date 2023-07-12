@@ -104,8 +104,42 @@ public class SpotifyService : ISpotifyService
         await client.Playlists.AddItems(playlistId, request);
     }
 
-    public Task AddToPlaylist(IList<TrackEntity> tracks)
+    public async Task AddArtist(RemoteArtist artist)
     {
-        throw new NotImplementedException();
+        var client = await _adapter.Client();
+
+        _logger.LogInformation("Adding {artistName} to {service}", artist.Name, Type());
+
+        var followRequest = new FollowRequest(FollowRequest.Type.Artist, new List<string>{ artist.RemoteId });
+
+        await client.Follow.Follow(followRequest);
+    }
+
+    public async Task<IEnumerable<RemoteArtist>> GetArtists()
+    {
+        var client = await _adapter.Client();
+        
+        _logger.LogDebug("Fetching artists");
+
+        var followedArtistsResponse = await client.Follow.OfCurrentUser();
+
+        _logger.LogDebug("Found {artistsCount} artists", followedArtistsResponse.Artists.Items?.Count ?? 0);
+
+        return followedArtistsResponse.Artists.Items?.Select(followedArtist => followedArtist.ToRemoteArtist()) ?? new List<RemoteArtist>();
+    }
+
+    public async Task<RemoteArtist?> SearchArtists(ArtistEntity artist)
+    {
+        var client = await _adapter.Client();
+
+        _logger.LogDebug("Searching for artist Name '{artistsCount}'", artist.Name);
+
+        var request = new SearchRequest(SearchRequest.Types.Artist, artist.Name);
+        
+        var searchResponse = await client.Search.Item(request);
+
+        _logger.LogDebug("Found {artistsCount} artists", searchResponse.Artists.Items?.Count ?? 0);
+
+        return searchResponse.Artists.Items?.First().ToRemoteArtist();
     }
 }

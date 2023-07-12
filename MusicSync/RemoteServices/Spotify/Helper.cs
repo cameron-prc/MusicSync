@@ -16,6 +16,11 @@ public static class Helper
             RemoteServiceType = IRemoteService.ServiceType.Spotify
         };
     }
+    
+    public static RemoteArtist ToRemoteArtist(this FullArtist artist)
+    {
+        return new RemoteArtist(IRemoteService.ServiceType.Spotify, artist.Id, artist.Name);
+    }
 
     public static RemoteArtist ToRemoteArtist(this SimpleArtist artist)
     {
