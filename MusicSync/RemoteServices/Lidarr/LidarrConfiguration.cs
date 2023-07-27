@@ -2,6 +2,6 @@ namespace MusicSync.RemoteServices.Lidarr;
 
 public class LidarrConfiguration
 {
-    public string ApiKey;
-    public string BaseUrl;
+    public string ApiKey { get; set; }
+    public string BaseUrl { get; set; }
 }
