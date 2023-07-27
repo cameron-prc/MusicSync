@@ -26,4 +26,14 @@ public class JobFragmentFactory
     {
         return new UpdateRemotePlaylistJobFragment(remotePlaylistService, destinationId, localPlaylistId, _repositoryClient);
     }
+
+    public UpdateLocalArtistsFromRemoteJobFragment BuildUpdateLocalArtistsFromRemoteJobFragment(IRemoteArtistService remoteArtistService)
+    {
+        return new UpdateLocalArtistsFromRemoteJobFragment(remoteArtistService, _repositoryClient);
+    }
+
+    public UpdateRemoteArtistsFromLocal BuildUpdateRemoteArtistsFromLocal(IRemoteArtistService remoteArtistService)
+    {
+        return new UpdateRemoteArtistsFromLocal(remoteArtistService, _repositoryClient);
+    }
 }
