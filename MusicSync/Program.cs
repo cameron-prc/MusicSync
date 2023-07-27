@@ -5,6 +5,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using MusicSync.Jobs;
 using MusicSync.Jobs.JobFragments;
+using MusicSync.RemoteServices.Lidarr;
 using MusicSync.RemoteServices.Spotify;
 using MusicSync.RemoteServices.Youtube;
 using MusicSync.Repository;
@@ -44,6 +45,8 @@ class Program
                 services.AddSingleton<ISpotifyAdapter, SpotifyAdapter>();
                 services.AddSingleton<ISpotifyService, SpotifyService>();
                 services.AddSingleton<IYoutubeService, YoutubeService>();
+                services.AddSingleton<ILidarrService, LidarrService>();
+                services.AddHttpClient();
                 services.AddSingleton<JobFactory>();
                 services.AddSingleton<JobFragmentFactory>();
                 services.AddTransient<IJobPopulator, JobPopulator>();
