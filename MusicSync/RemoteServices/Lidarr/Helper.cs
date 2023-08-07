@@ -6,6 +6,16 @@ public static class Helper
 {
     public static AddArtistRequest ToRequestModel(this RemoteArtist artist)
     {
-        return new AddArtistRequest();
+        return new AddArtistRequest
+        {
+            RootFolderPath = "",
+            ForeignArtistId = artist.RemoteId,
+            MetadataProfileId = "",
+            Monitor = "true",
+            MonitorNewItems = "true",
+            QualityProfileId = "",
+            SearchForMissingAlbums = "false",
+            Tags = ""
+        };
     }
 }
